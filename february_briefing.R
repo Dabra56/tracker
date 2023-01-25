@@ -18,7 +18,7 @@ gdp_nowcast <-
 
 #gdp_nowcast_df <- gdp_nowcast_df %>% mutate(Date=date_vector)
 
-write.csv(x = gdp_nowcast, file="data/gdp_nowcast.csv")
+write.csv(x = gdp_nowcast, file="gdp_nowcast.csv")
 
 cfnai_df <- read.xlsx("https://www.chicagofed.org/-/media/publications/cfnai/cfnai-data-series-xlsx.xlsx", sheet="data",
                       detectDates = TRUE)
@@ -29,7 +29,7 @@ cfnai <-
     filter(Date>"2008-01-01")
 
 
-write.csv(x = cfnai, file="data/cfnai.csv")
+write.csv(x = cfnai, file="cfnai.csv")
 
 # Getting weekly Employment insurance data 
 ei_monthly <- get_cansim_vector("v64549350") %>% 
@@ -84,7 +84,7 @@ ei_datawrapper <-
   bind_rows(ei_file) %>%
     mutate(`Number of beneficiairies` = case_when(is.na(`Number of beneficiairies`)~ "R" ))
 
-write.csv(x = ei_datawrapper, file="data/ei_data.csv")
+write.csv(x = ei_datawrapper, file="ei_data.csv")
 
 business_conditions <-get_cansim("33-10-0398-01")
 
@@ -160,7 +160,7 @@ colnames(business_conditions_city)[3] <-  "Variations since last month ^in %^"
 colnames(business_conditions_city)[4] <-  "Variations for last 6 months ^in %^"
 colnames(business_conditions_city)[5] <-  "Variations since previous year ^in %^"
 
-write.csv(x = business_conditions_city, file="data/business_condition.csv")
+write.csv(x = business_conditions_city, file="business_condition.csv")
 
 # GOOGLE TRENDS 
 
@@ -194,7 +194,7 @@ gtrends_inflation<-
   gtrends_datawrapper %>% 
   select(date, Inflation)
 
-write.csv(x = business_conditions_city, file="data/google_trends.csv")
+write.csv(x = business_conditions_city, file="google_trends.csv")
 
 
   
