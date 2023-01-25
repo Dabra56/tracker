@@ -5,6 +5,8 @@ library(gtrendsR)
 library(openxlsx)
 library(lubridate)
 
+#Comment
+
 gdp_nowcast_df <-  read.xlsx("https://www.frbatlanta.org/-/media/Documents/cqer/researchcq/gdpnow/GDPTrackingModelDataAndForecasts.xlsx",sheet="ContribHistory",detectDates = TRUE,cols = (2:50))
 
 
