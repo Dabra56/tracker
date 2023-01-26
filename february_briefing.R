@@ -194,9 +194,9 @@ gtrends_inflation<-
   gtrends_datawrapper %>% 
   select(date, Inflation)
 
-write.csv(x = business_conditions_city, file="google_trends.csv")
-
-
+write.csv(x = gtrends_recession, file="gtrend_recession.csv")
+write.csv(x = gtrends_unemployment, file="gtrend_unemployment.csv")
+write.csv(x = gtrends_inflation, file="gtrends_inflation.csv")
   
   # #Twitter 
 # library("openssl")
