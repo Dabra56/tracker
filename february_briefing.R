@@ -7,7 +7,7 @@ library(openssl)
 library(httpuv)
 library(rtweet)
 library(twitteR)
-
+library(gtrendsR)
 
 #Comment
 
@@ -98,7 +98,7 @@ ei_datawrapper <-
   bind_rows(ei_file %>% 
               mutate(Date= as.Date(mdy(Date))))
 
-write.table(ei_datawrapper, file = "employment_insurance_final.csv") 
+write.csv(ei_datawrapper, file = "employment_insurance_final.csv") 
 
 business_conditions <-get_cansim("33-10-0398-01")
 
@@ -179,7 +179,7 @@ write.csv(x = business_conditions_city, file="business_condition.csv")
 # GOOGLE TRENDS 
 # 
 # install.packages("gtrendsR")
- library(gtrendsR)
+
  
   # search_terms <- c("Recession", 
   #                   "Unemployment",
