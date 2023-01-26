@@ -165,11 +165,12 @@ business_conditions_city <-
   business_conditions_city %>% 
     mutate(GEO= str_extract_all(GEO,pattern=reg_exp_city),
            GEO= str_sub(GEO,1, str_length(GEO)-1 ), 
-           last_month = last_date/last_month - 1,
-           six_month = last_date/six_month -1 ,
-           last_year = last_date/last_year -1) 
+           last_month = (last_date/last_month - 1)*100,
+           six_month = (last_date/six_month -1)*100 ,
+           last_year = (last_date/last_year -1)*100) 
 
-colnames(business_conditions_city)[2] <-  paste0("Index value for ", as.character(last_date))
+colnames(business_conditions_city)[1] <-  ""
+colnames(business_conditions_city)[2] <-  as.character(last_date)
 colnames(business_conditions_city)[3] <-  "Variations since last month ^in %^"
 colnames(business_conditions_city)[4] <-  "Variations for last 6 months ^in %^"
 colnames(business_conditions_city)[5] <-  "Variations since previous year ^in %^"
@@ -216,9 +217,14 @@ gtrends_inflation <- inflation_results %>%
   select(date,hits) %>%
   rename(Inflation = hits)
 
+
+gtrends_all <- merge(x=gtrends_recession, y=gtrends_unemployment, by="date" )
+gtrends_all <- merge(x=gtrends_all, y=gtrends_inflation, by="date" )
+
 write.csv(x = gtrends_recession, file="gtrend_recession.csv")
 write.csv(x = gtrends_unemployment, file="gtrend_unemployment.csv")
 write.csv(x = gtrends_inflation, file="gtrends_inflation.csv")
+write.csv(x = gtrends_all, file="gtrends_all.csv")
 
 #Twitter
 
