@@ -25,6 +25,11 @@ jobs:
             any::gtrendsR
             any::openxlsx
             any::lubridate
+            any::openssl
+            any::httpuv
+            any::rtweet
+            any::twitteR
+            any::gtrendsR
 
       - name: Execute Script
         run: Rscript february_briefing.R
