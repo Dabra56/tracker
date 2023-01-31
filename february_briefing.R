@@ -49,7 +49,8 @@ write.csv(x = wei, file="wei.csv")
 # Getting weekly Employment insurance data 
 ei_monthly <- get_cansim_vector("v64549350") %>% 
       filter(Date> "2021-12-01") %>% 
-      select(Date,val_norm)
+      select(Date,val_norm) %>% 
+      mutate(val_norm=val_norm/1000)
       
 colnames(ei_monthly)[2] <- "Number of beneficiairies" 
   
