@@ -48,7 +48,7 @@ write.csv(x = wei, file="wei.csv")
 
 # Getting weekly Employment insurance data 
 ei_monthly <- get_cansim_vector("v64549350") %>% 
-      filter(Date> "2018-12-01") %>% 
+      filter(Date> "2021-12-01") %>% 
       select(Date,val_norm)
       
 colnames(ei_monthly)[2] <- "Number of beneficiairies" 
@@ -188,45 +188,45 @@ write.csv(x = business_conditions_city, file="business_condition.csv")
 #   #                   "Inflation")
 # Sys.sleep(100)
 # 
-# gtrends(keyword = "Recession",
-#          geo = "CA",
-#          time = "today 12-m") -> recession_results
-# 
-# gtrends_recession <- recession_results %>%
-#   .$interest_over_time %>%
-#   select(date,hits) %>%
-#   rename(Recession = hits)
-# 
-# Sys.sleep(100)
-# 
-# gtrends(keyword = "Unemployment",
-#         geo = "CA",
-#         time = "today 12-m") -> unemployment_results
-# 
-# gtrends_unemployment <- unemployment_results %>%
-#   .$interest_over_time %>%
-#   select(date,hits) %>%
-#   rename(Unemployment = hits)
-# 
-# Sys.sleep(100)  
-# 
-# gtrends(keyword = "Inflation",
-#         geo = "CA",
-#         time = "today 12-m") -> inflation_results
-# 
-# gtrends_inflation <- inflation_results %>%
-#   .$interest_over_time %>%
-#   select(date,hits) %>%
-#   rename(Inflation = hits)
-# 
-# 
-# gtrends_all <- merge(x=gtrends_recession, y=gtrends_unemployment, by="date" )
-# gtrends_all <- merge(x=gtrends_all, y=gtrends_inflation, by="date" )
-# 
-# write.csv(x = gtrends_recession, file="gtrend_recession.csv")
-# write.csv(x = gtrends_unemployment, file="gtrend_unemployment.csv")
-# write.csv(x = gtrends_inflation, file="gtrends_inflation.csv")
-# write.csv(x = gtrends_all, file="gtrends_all.csv")
+gtrends(keyword = "Recession",
+         geo = "CA",
+         time = "today 12-m") -> recession_results
+
+gtrends_recession <- recession_results %>%
+  .$interest_over_time %>%
+  select(date,hits) %>%
+  rename(Recession = hits)
+
+Sys.sleep(100)
+
+gtrends(keyword = "Unemployment",
+        geo = "CA",
+        time = "today 12-m") -> unemployment_results
+
+gtrends_unemployment <- unemployment_results %>%
+  .$interest_over_time %>%
+  select(date,hits) %>%
+  rename(Unemployment = hits)
+
+Sys.sleep(100)
+
+gtrends(keyword = "Inflation",
+        geo = "CA",
+        time = "today 12-m") -> inflation_results
+
+gtrends_inflation <- inflation_results %>%
+  .$interest_over_time %>%
+  select(date,hits) %>%
+  rename(Inflation = hits)
+
+
+gtrends_all <- merge(x=gtrends_recession, y=gtrends_unemployment, by="date" )
+gtrends_all <- merge(x=gtrends_all, y=gtrends_inflation, by="date" )
+
+write.csv(x = gtrends_recession, file="gtrend_recession.csv")
+write.csv(x = gtrends_unemployment, file="gtrend_unemployment.csv")
+write.csv(x = gtrends_inflation, file="gtrends_inflation.csv")
+write.csv(x = gtrends_all, file="gtrends_all.csv")
 
 #Twitter
 
