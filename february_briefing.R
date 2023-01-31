@@ -8,6 +8,7 @@ library(httpuv)
 library(rtweet)
 library(twitteR)
 library(gtrendsR)
+library(httr)
 
 #Comment
 
@@ -179,52 +180,53 @@ write.csv(x = business_conditions_city, file="business_condition.csv")
 
 # GOOGLE TRENDS 
 # 
-# install.packages("gtrendsR")
+#install.packages("gtrendsR")
 
  
   # search_terms <- c("Recession", 
-  #                   "Unemployment",
-  #                   "Inflation")
-
-gtrends(keyword = "Recession",
-         geo = "CA",
-         time = "today 12-m") -> recession_results
-
-gtrends_recession <- recession_results %>%
-  .$interest_over_time %>%
-  select(date,hits) %>%
-  rename(Recession = hits)
-
-Sys.sleep(100)
-
-gtrends(keyword = "Unemployment",
-        geo = "CA",
-        time = "today 12-m") -> unemployment_results
-
-gtrends_unemployment <- unemployment_results %>%
-  .$interest_over_time %>%
-  select(date,hits) %>%
-  rename(Unemployment = hits)
-
-Sys.sleep(100)  
-
-gtrends(keyword = "Inflation",
-        geo = "CA",
-        time = "today 12-m") -> inflation_results
-
-gtrends_inflation <- inflation_results %>%
-  .$interest_over_time %>%
-  select(date,hits) %>%
-  rename(Inflation = hits)
-
-
-gtrends_all <- merge(x=gtrends_recession, y=gtrends_unemployment, by="date" )
-gtrends_all <- merge(x=gtrends_all, y=gtrends_inflation, by="date" )
-
-write.csv(x = gtrends_recession, file="gtrend_recession.csv")
-write.csv(x = gtrends_unemployment, file="gtrend_unemployment.csv")
-write.csv(x = gtrends_inflation, file="gtrends_inflation.csv")
-write.csv(x = gtrends_all, file="gtrends_all.csv")
+#   #                   "Unemployment",
+#   #                   "Inflation")
+# Sys.sleep(100)
+# 
+# gtrends(keyword = "Recession",
+#          geo = "CA",
+#          time = "today 12-m") -> recession_results
+# 
+# gtrends_recession <- recession_results %>%
+#   .$interest_over_time %>%
+#   select(date,hits) %>%
+#   rename(Recession = hits)
+# 
+# Sys.sleep(100)
+# 
+# gtrends(keyword = "Unemployment",
+#         geo = "CA",
+#         time = "today 12-m") -> unemployment_results
+# 
+# gtrends_unemployment <- unemployment_results %>%
+#   .$interest_over_time %>%
+#   select(date,hits) %>%
+#   rename(Unemployment = hits)
+# 
+# Sys.sleep(100)  
+# 
+# gtrends(keyword = "Inflation",
+#         geo = "CA",
+#         time = "today 12-m") -> inflation_results
+# 
+# gtrends_inflation <- inflation_results %>%
+#   .$interest_over_time %>%
+#   select(date,hits) %>%
+#   rename(Inflation = hits)
+# 
+# 
+# gtrends_all <- merge(x=gtrends_recession, y=gtrends_unemployment, by="date" )
+# gtrends_all <- merge(x=gtrends_all, y=gtrends_inflation, by="date" )
+# 
+# write.csv(x = gtrends_recession, file="gtrend_recession.csv")
+# write.csv(x = gtrends_unemployment, file="gtrend_unemployment.csv")
+# write.csv(x = gtrends_inflation, file="gtrends_inflation.csv")
+# write.csv(x = gtrends_all, file="gtrends_all.csv")
 
 #Twitter
 
@@ -274,6 +276,179 @@ nowcast_gdp_file <-
 nowcast_gdp_file <- nowcast_gdp_file[!duplicated(nowcast_gdp_file), ]
 
 write.csv(nowcast_gdp_file, file = "nowcast_gdp.csv", append = TRUE) 
+
+# Might need to change URL
+url <- "https://assets.ctfassets.net/gm6df3h7p862/5f8qkOUJDksXy7YOh0MgRj/338782b861e240a2ef17ae697bbcf0fb/MLS_HPI.zip"
+
+zip_file <- GET(url)
+
+writeBin(content(zip_file, "raw"), "MLS_HPI.zip")
+
+unzip("MLS_HPI.zip")
+
+MLS_HPI <- read.xlsx("Not Seasonally Adjusted.xlsx",detectDates = TRUE)
+
+last_date=tail(MLS_HPI$Date)[1]
+
+all_housing <- 
+  MLS_HPI %>% 
+    select(Date,Composite_HPI) %>% 
+  mutate(last_month=lag(Composite_HPI,n=1)) %>% 
+  filter(Date>"2021-12-01") %>% 
+  mutate(housing_change_last_month = (Composite_HPI/last_month-1)*100) %>% 
+  select(Date,housing_change_last_month)
+
+all_housing_decrease <- 
+  all_housing %>% 
+      filter(Date>"2022-03-01") %>% 
+      mutate(total_decrease = cumsum(housing_change_last_month)) %>% 
+    select(Date,total_decrease)
+
+housing_merge <- merge(x=all_housing,y=all_housing_decrease, by="Date",all=TRUE)
+
+write.csv(all_housing, file = "housing.csv")     
+
+single_family <- 
+  MLS_HPI %>% 
+  select(Date,Single_Family_HPI) %>% 
+  mutate(last_month=lag(Single_Family_HPI,n=1)) %>% 
+  filter(Date>"2021-12-01") %>% 
+  mutate(sf_change_last_month = (Single_Family_HPI/last_month-1)*100)%>% 
+  select(Date,sf_change_last_month)
+
+
+
+
+# Single_Family_HPI
+# 
+# single_family <-   MLS_HPI %>% 
+#   select(Date,Single_Family_HPI) %>% 
+#   mutate(last_month=lag(Single_Family_HPI,n=1),
+#          last_six_month=lag(Single_Family_HPI,n=6),
+#          last_year=lag(Single_Family_HPI,n=12)) %>% 
+#   filter(Date==last_date) %>% 
+#   mutate(change_last_month = round((Single_Family_HPI/last_month-1)*100,digits = 1),
+#          change_six_month = round((Single_Family_HPI/last_six_month-1)*100,digits = 1),
+#          change_last_year = round((Single_Family_HPI/last_year-1)*100,digits=1)) %>% 
+#   mutate(indicator = "Single family homes") %>% 
+#   select(indicator,
+#          change_last_month,
+#          change_six_month,
+#          change_last_year)
+
+
+ft_employment <- get_cansim_vector("v2062812") %>% 
+  select(Date,val_norm) %>% 
+  rename(ft_employment = val_norm) %>% 
+  mutate(last_month=lag(ft_employment,n=1))
+# 
+# last_date=tail(ft_employment$Date)[1]
+
+ft_employment_change <- 
+  ft_employment %>% 
+    filter(Date>"2021-12-01") %>% 
+      mutate(ft_change_last_month = (ft_employment - last_month)/1000) %>% 
+  select(Date,ft_change_last_month)
+
+
+pt_employment <- get_cansim_vector("v2062813") %>% 
+  select(Date,val_norm) %>% 
+  rename(pt_employment = val_norm) %>% 
+  mutate(last_month=lag(pt_employment,n=1))
+
+pt_employment_change <- 
+ pt_employment %>% 
+  filter(Date>"2021-12-01") %>% 
+  mutate(pt_change_last_month = (pt_employment - last_month)/1000) %>% 
+  select(Date,pt_change_last_month)
+
+
+employment_change <- merge(x=ft_employment_change,y=pt_employment_change,by="Date")
+
+write.csv(employment_change, file = "employment_change.csv")     
+
+
+job_vacancy <- get_cansim_vector("v1212389364") %>% 
+  select(Date,val_norm) %>% 
+  mutate(last_month=lag(val_norm,n=1)) %>% 
+  filter(Date>"2021-12-01") %>% 
+  rename(job_vacancy = val_norm) %>% 
+  mutate(job_vacancy_change = job_vacancy -last_month )
+
+job_vacancy_change <- 
+  job_vacancy %>% 
+      mutate(job_vacancy_change=job_vacancy_change/1000) %>% 
+      select(Date,job_vacancy_change)
+
+employment_vacancy <- merge(x=employment_change,y=job_vacancy_change,by="Date",all=TRUE)
+
+employment_vacancy_monthly <- 
+  employment_vacancy %>% 
+  rowwise() %>% 
+    mutate(jobs = ft_change_last_month + pt_change_last_month,total=sum(job_vacancy_change,ft_change_last_month,pt_change_last_month,na.rm = TRUE)) %>% 
+    select(Date,jobs,job_vacancy_change,total)
+
+write.csv(employment_vacancy_monthly, file = "employment_vacancy_change.csv")    
+
+last_date <- tail(employment_vacancy$Date)
+
+employment_vacancy_cumulative <- 
+  employment_vacancy %>% 
+    mutate(jobs = ft_change_last_month + pt_change_last_month,total=sum(job_vacancy_change,ft_change_last_month,pt_change_last_month,na.rm = TRUE),
+           cumulative_jobs = cumsum(jobs), 
+           cumulative_vacancy = cumsum(job_vacancy_change)) %>% 
+  fill(cumulative_vacancy,.direction = "downup") %>% 
+  rowwise() %>% 
+mutate(cumulative_total =sum(cumulative_jobs,cumulative_vacancy,na.rm = TRUE) ) %>% 
+  select(Date,cumulative_jobs,cumulative_vacancy,cumulative_total)
+
+write.csv(employment_vacancy_cumulative, file = "employment_vacancy_cumulative.csv")    
+
+
+gdp_industry <-get_cansim("36-10-0434-02")
+
+names(gdp_industry)<-str_replace_all(names(gdp_industry),
+                                            c(" " = "_" , "," = "_", "[(]" ="_","[)]"="_"))
+
+gdp_all_industry <- 
+  gdp_industry %>% 
+    filter(Seasonal_adjustment=="Seasonally adjusted at annual rates",
+           Prices=="Chained (2012) dollars",
+           North_American_Industry_Classification_System__NAICS_=="All industries [T001]") %>% 
+  mutate(last_month=lag(val_norm,n=1)) %>%
+    filter(Date >"2021-12-01") %>% 
+    mutate(changes_month = (val_norm/last_month - 1)*100) %>% 
+  select(Date,changes_month) %>% 
+  rename(all_industry = changes_month)
+
+gdp_goods <- 
+  gdp_industry %>% 
+  filter(Seasonal_adjustment=="Seasonally adjusted at annual rates",
+         Prices=="Chained (2012) dollars",
+         North_American_Industry_Classification_System__NAICS_=="Goods-producing industries [T002]") %>% 
+  mutate(last_month=lag(val_norm,n=1)) %>%
+  filter(Date >"2021-12-01") %>% 
+  mutate(changes_month = (val_norm/last_month - 1)*100) %>% 
+  select(Date,changes_month) %>% 
+  rename(goods = changes_month)
+
+gdp_services <- 
+  gdp_industry %>% 
+  filter(Seasonal_adjustment=="Seasonally adjusted at annual rates",
+         Prices=="Chained (2012) dollars",
+         North_American_Industry_Classification_System__NAICS_=="Service-producing industries [T003]") %>% 
+  mutate(last_month=lag(val_norm,n=1)) %>%
+  filter(Date >"2021-12-01") %>% 
+  mutate(changes_month = (val_norm/last_month - 1)*100) %>% 
+  select(Date,changes_month)  %>% 
+  rename(services = changes_month)
+
+
+gdp_datawrapper <- merge(x=gdp_all_industry,y=gdp_goods,by="Date")
+gdp_datawrapper <- merge(x=gdp_datawrapper,y=gdp_services,by="Date")
+
+
+write.csv(gdp_datawrapper, file = "gdp_datawrapper.csv")   
 
 
 # searchTwitter("Covid-19", n=3)
