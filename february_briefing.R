@@ -102,8 +102,8 @@ ei_datawrapper <-
 
 for (i in 1:nrow(ei_datawrapper)){
 
-      if (!is.na(ei_datawrapper$ei_regular_beneficiairies)) {
-        year(ei_datawrapper$Date) <- 2023
+      if (!is.na(ei_datawrapper$ei_regular_beneficiairies[i])) {
+        year(ei_datawrapper$Date[i]) <- 2023
         
       }
 }
@@ -458,6 +458,11 @@ gdp_datawrapper <- merge(x=gdp_datawrapper,y=gdp_services,by="Date")
 
 
 write.csv(gdp_datawrapper, file = "gdp_datawrapper.csv")   
+
+retail <-get_cansim("20-10-0008-01")
+
+names(retail)<-str_replace_all(names(retail),
+                                     c(" " = "_" , "," = "_", "[(]" ="_","[)]"="_"))
 
 
 # searchTwitter("Covid-19", n=3)
