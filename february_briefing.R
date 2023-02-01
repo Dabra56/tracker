@@ -9,6 +9,7 @@ library(rtweet)
 library(twitteR)
 library(gtrendsR)
 library(httr)
+library(zoo)
 
 #Comment
 
@@ -132,36 +133,42 @@ last_month <- date_vector[length(date_vector)-4]
 six_month <- date_vector[length(date_vector)-26]
 last_year <- date_vector[length(date_vector)-52]
 
+business_conditions <- 
+  business_conditions %>% 
+  filter(GEO %in% city_vector) %>% 
+  arrange(desc(GEO)) %>% 
+  mutate(roll_average = rollmean(val_norm, k=4, fill=NA, align='right'))
+
 
 
 business_conditions_last_date <- 
   business_conditions %>% 
     filter(Date==last_date) %>% 
     filter(GEO %in% city_vector) %>% 
-    select(GEO, val_norm)%>%
-rename(last_date = val_norm)
+    select(GEO, roll_average)%>%
+rename(last_date = roll_average)
 
   
 business_conditions_last_month <- 
   business_conditions %>% 
   filter(Date==last_month) %>% 
   filter(GEO %in% city_vector) %>% 
-  select(GEO, val_norm) %>% 
-  rename(last_month = val_norm)
+  select(GEO, roll_average) %>% 
+  rename(last_month = roll_average)
 
 business_conditions_six_month <- 
   business_conditions %>% 
   filter(Date==six_month) %>% 
   filter(GEO %in% city_vector) %>% 
-  select(GEO, val_norm) %>% 
-  rename(six_month = val_norm)
+  select(GEO, roll_average) %>% 
+  rename(six_month = roll_average)
 
 business_conditions_last_year <- 
   business_conditions %>% 
   filter(Date==last_year) %>% 
   filter(GEO %in% city_vector) %>% 
-  select(GEO, val_norm) %>% 
-  rename(last_year = val_norm)
+  select(GEO, roll_average) %>% 
+  rename(last_year = roll_average)
 
 business_conditions_city <- merge(x=business_conditions_last_date, y= business_conditions_last_month, by = "GEO")
 
@@ -463,6 +470,19 @@ retail <-get_cansim("20-10-0008-01")
 
 names(retail)<-str_replace_all(names(retail),
                                      c(" " = "_" , "," = "_", "[(]" ="_","[)]"="_"))
+
+retail <- 
+  retail %>% 
+  filter(Adjustments=="Seasonally adjusted",
+         North_American_Industry_Classification_System__NAICS_=="Retail trade [44-45]",
+         GEO=="Canada") %>% 
+  mutate(last_month=lag(val_norm,n=1)) %>%
+  filter(Date >"2021-12-01") %>% 
+  mutate(changes_month = (val_norm/last_month - 1)*100) %>% 
+  select(Date,changes_month) %>% 
+  rename(retail = changes_month)
+
+write.csv(retail, file = "retail.csv")   
 
 
 # searchTwitter("Covid-19", n=3)
