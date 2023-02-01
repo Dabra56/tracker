@@ -49,9 +49,8 @@ write.csv(x = wei, file="wei.csv")
 # Getting weekly Employment insurance data 
 ei_monthly <- get_cansim_vector("v64549350") %>% 
       filter(Date> "2021-12-01") %>% 
-      select(Date,val_norm) %>% 
-      mutate(val_norm=val_norm/1000)
-      
+      select(Date,val_norm)
+
 colnames(ei_monthly)[2] <- "Number of beneficiairies" 
   
 
@@ -97,9 +96,10 @@ if (mdy(ei_file[1,1])!=mdy(Date)) {
 
 ei_datawrapper <- 
   ei_monthly %>% 
-  bind_rows(ei_file %>% 
-              mutate(Date= as.Date(mdy(Date))))
+  bind_rows(ei_file %>% mutate(Date= as.Date(mdy(Date)))) %>% 
+  mutate(ei_regular_beneficiairies= (gsub(",","",ei_regular_beneficiairies)))
 
+#
 write.csv(ei_datawrapper, file = "employment_insurance_final.csv") 
 
 business_conditions <-get_cansim("33-10-0398-01")
