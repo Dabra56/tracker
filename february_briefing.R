@@ -99,6 +99,14 @@ ei_datawrapper <-
   bind_rows(ei_file %>% mutate(Date= as.Date(mdy(Date)))) %>% 
   mutate(ei_regular_beneficiairies= (gsub(",","",ei_regular_beneficiairies)))
 
+
+for (i in 1:nrow(ei_datawrapper)){
+
+      if (!is.na(ei_datawrapper$ei_regular_beneficiairies)) {
+        year(ei_datawrapper$Date) <- 2023
+        
+      }
+}
 #
 write.csv(ei_datawrapper, file = "employment_insurance_final.csv") 
 
